@@ -1,6 +1,9 @@
 from http import HTTPStatus
 
+import jwt
+
 from fast_zero.schemas import UserPublic
+from fast_zero.security import settings
 
 
 def test_create_existing_username(client):
@@ -128,3 +131,20 @@ def test_delete_user_wrong_user(client, other_user, token):
     )
     assert response.status_code == HTTPStatus.FORBIDDEN
     assert response.json() == {'detail': 'Not enough permissions'}
+
+
+def test_delete_user_nonexistent(client):
+    payload = {
+        'name': 'John Doe',
+        'sub': 'nonexisting-useer',
+        'iat': 1516239022,
+    }
+
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+
+    response = client.delete(
+        '/users/1', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'Could not validate credentials'}

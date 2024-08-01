@@ -16,15 +16,6 @@ def teste_get_token(client, user):
     assert 'token_type' in token
 
 
-def test_jwt_invalid_token(client):
-    response = client.delete(
-        '/users/1', headers={'Authorization': 'Bearer token-invalido'}
-    )
-
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.json() == {'detail': 'Could not validate credentials'}
-
-
 def test_token_expired_after_time(client, user):
     with freeze_time('2023-07-14 12:00:00'):
         response = client.post(
@@ -66,7 +57,7 @@ def test_token_wrong_password(client, user):
     assert response.json() == {'detail': 'Incorrect email or password'}
 
 
-def test_refresh_token(client, user, token):
+def test_refresh_token(client, token):
     response = client.post(
         '/auth/refresh_token',
         headers={'Authorization': f'Bearer {token}'},
